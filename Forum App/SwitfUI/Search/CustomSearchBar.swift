@@ -1,0 +1,53 @@
+//
+//  CustomSearchBar.swift
+//  Forum App
+//
+//  Created by MacBook Pro on 3/30/20.
+//  Copyright © 2020 MacBook Pro. All rights reserved.
+//
+
+import SwiftUI
+import Firebase
+
+struct CustomSearchBar: View {
+    @State var txt : String = ""
+    @Binding var data : [Post]
+    @EnvironmentObject var user : UserServices
+    private let uid = Auth.auth().currentUser?.uid
+    var body: some View {
+        VStack {
+            VStack(spacing: 0) {
+                HStack {
+                    TextField("type something ... ", text: $txt).foregroundColor(.black)
+                    if !self.txt.isEmpty {
+                        Button(action: {
+                            self.txt = ""
+                        }) {
+                            Image(systemName: "trash.circle.fill").resizable().frame(width: 30, height: 30)
+                        }.foregroundColor(.black)
+                    }
+                }.padding()
+            }.background(Color.white).foregroundColor(.black).cornerRadius(UIScreen.main.bounds.height/2).padding()
+            if !self.txt.isEmpty {
+                if self.data.filter({$0.msg.lowercased().contains(self.txt.lowercased())}).count == 0 {
+                    Text("No result...").fontWeight(.regular).foregroundColor(.black).padding()
+                }
+                ScrollView {
+                    VStack(alignment: .leading) {
+                        ForEach(self.data.filter{$0.msg.lowercased().contains(self.txt.lowercased())}) { i in
+                            PostCellTop(name: i.name, id: i.tagId, pic: i.pic, image: i.url, msg: i.msg,uid: i.uid)
+                            
+                            if i.pic != ""{
+                                
+                                PostCellMidle(pic: i.pic).padding(.leading, 60)
+                                
+                            }
+                            PostCellBottom(id: i.id, countLike: Int(i.likes)!,isFill: i.uidLikes.contains(self.uid!),uidLikes: i.uidLikes ,name: self.user.datas.name,uidPost:i.uid ).offset(x: UIScreen.main.bounds.width / 4)
+                        }
+                    }.foregroundColor(.white)
+                }
+            }
+        }
+    }
+}
+
